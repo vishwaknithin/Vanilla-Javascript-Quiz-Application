@@ -1,4 +1,4 @@
-// Lecture: Add Questions - Part 4
+// Lecture: Edit Questions
 
 /*******************************
 *********QUIZ CONTROLLER********
@@ -26,13 +26,18 @@ var quizController = (function() {
             return JSON.parse(localStorage.getItem('questionCollection'));
         }, 
         // 37
-        removeQuestionCollection: function() {
-            localStorage.removeItem('questionCollection');
+        removeQuestionCollectino: function() {
+            localStorage.removeItem('questionColection');
         }
     }
-
+    // 90
+    if(questionLocalStorage.getQuestionCollection() === null) {
+        questionLocalStorage.setQuestionCollection([]);
+    }
     // 13
     return {
+        // 80
+        getQuestionLocalStorage: questionLocalStorage,
         // 14
         addQuestionOnLocalStorage: function(newQuestText, opts) {
             // 18
@@ -105,20 +110,28 @@ var quizController = (function() {
                         }
                         // 47
                         console.log(questionLocalStorage.getQuestionCollection());
+                        // 96
+                        return true;
                     // 61
                     } else {
                         // 62
                         alert('You missed to check correct answer, or you checked answer without value');
+                        //97
+                        return false;
                     }
                 // 56
                 } else {
                     // 57
                     alert('You must insert at least two options');
+                    // 98
+                    return false;
                 }
             // 53
             } else {
                 // 54
                 alert('Please, Insert Question');
+                // 99
+                return false;
             }
         }
     };
@@ -136,12 +149,113 @@ var UIController = (function() {
         //*******Admin Panel Elements********/
         questInsertBtn: document.getElementById('question-insert-btn'), // 6
         newQuestionText: document.getElementById('new-question-text'), // 15
-        adminOptions: document.querySelectorAll('.admin-option') // 16
+        adminOptions: document.querySelectorAll('.admin-option'), // 16
+        adminOptionsContainer: document.querySelector(".admin-options-container"), // 65
+        insertedQuestsWrapper: document.querySelector(".inserted-questions-wrapper"), // 83
+        questUpdateBtn: document.getElementById('question-update-btn'), // 133
+        questDeleteBtn: document.getElementById('question-delete-btn') // 134
     };
 
     // 7
     return {
-        getDomItems: domItems //8
+        getDomItems: domItems, // 8
+        // 63
+        addInputsDynamically: function() {
+            // 67
+            var addInput = function() {
+                // 68
+                // console.log('Works');
+                // 69         // 71
+                var inputHTML, z;
+                // 72
+                z = document.querySelectorAll(".admin-option").length;
+                // 70                                                                                 //73    
+                inputHTML = '<div class="admin-option-wrapper"><input type="radio" class="admin-option-' + z + '" name="answer" value="' + z + '"><input type="text" class="admin-option admin-option-' + z + '" value=""></div>';
+                // 74
+                domItems.adminOptionsContainer.insertAdjacentHTML('beforeend', inputHTML);
+                // 75
+                domItems.adminOptionsContainer.lastElementChild.previousElementSibling.lastElementChild.removeEventListener('focus', addInput);
+                // 76
+                domItems.adminOptionsContainer.lastElementChild.lastElementChild.addEventListener('focus', addInput);
+            }
+            // 66
+            domItems.adminOptionsContainer.lastElementChild.lastElementChild.addEventListener('focus', addInput);
+        },
+        // 79
+        createQuestionList: function(getQuestions) {
+            // 86          // 91
+            var questHTML, numberingArr;
+            // 92
+            numberingArr = [];
+            // 82
+            // console.log(getQuestions);
+            // 84
+            domItems.insertedQuestsWrapper.innerHTML = "";
+            // 85
+            for(var i = 0; i < getQuestions.getQuestionCollection().length; i++) {
+                // 93
+                numberingArr.push(i + 1);
+                // 87                     // 94                    // 88
+                questHTML = '<p><span>' + numberingArr[i] + '. ' + getQuestions.getQuestionCollection()[i].questionText + '</span><button id="question-' + getQuestions.getQuestionCollection()[i].id + '">Edit</button></p>';
+                // 95
+                // console.log(getQuestions.getQuestionCollection()[i].id);
+                // 89
+                domItems.insertedQuestsWrapper.insertAdjacentHTML('afterbegin', questHTML);
+            }
+        },
+        // 104                                           // 130
+        editQuestList: function(event, storageQuestList, addInpsDynFn) {
+            // 109     // 113               // 117     // 119      // 125
+            var getId, getStorageQuestList, foundItem, placeInArr, optionHTML;
+            // 107
+            if('question-'.indexOf(event.target.id)) {
+                // 110  // 112
+                getId = parseInt(event.target.id.split('-')[1]);
+                // 114
+                getStorageQuestList = storageQuestList.getQuestionCollection();
+                // 115
+                for(var i = 0; i < getStorageQuestList.length; i++) {
+                    // 116
+                    if(getStorageQuestList[i].id === getId) {
+                        // 118
+                        foundItem = getStorageQuestList[i];
+                        // 120
+                        placeInArr = i;
+                    }
+                }
+                // 121
+                // console.log(foundItem, placeInArr);
+                // 122
+                domItems.newQuestionText.value = foundItem.questionText;
+                // 123
+                domItems.adminOptionsContainer.innerHTML = '';
+                // 128
+                optionHTML = '';
+                // 124
+                for(var x = 0; x < foundItem.options.length; x++) {
+                    // 126
+                    optionHTML += '<div class="admin-option-wrapper"><input type="radio" class="admin-option-' + x + '" name="answer" value="' + x + '"><input type="text" class="admin-option admin-option-' + x + '" value="'+ foundItem.options[x] + '"></div>';
+                }
+                // 129
+                domItems.adminOptionsContainer.innerHTML = optionHTML;
+                // 135
+                domItems.questDeleteBtn.style.visibility = 'visible';
+                // 136
+                domItems.questUpdateBtn.style.visibility = 'visible';
+                // 137
+                domItems.questInsertBtn.style.visibility = 'hidden';
+                // 127
+                // console.log(optionHTML);
+                // 132
+                addInpsDynFn();//to make add options contsainer html available for edit questions
+            }
+            // 106
+            // console.log(event, storageQuestList);
+            // 108
+            // console.log(event.target.id);
+            // 111
+            // console.log(getId);
+        }
     };
 
 })();
@@ -154,18 +268,33 @@ var controller = (function(quizCtrl, UICtrl) {
 
     // 11
     var selectedDomItems = UICtrl.getDomItems;
-
+    // 64
+    UICtrl.addInputsDynamically();
+    // 81
+    UICtrl.createQuestionList(quizCtrl.getQuestionLocalStorage);
     // 9 -- //12 (change with var selectedDomItems)
     selectedDomItems.questInsertBtn.addEventListener('click', function() {
+        // 77
+        var adminOptions = document.querySelectorAll('.admin-option');
         // 10
         // console.log('Works');
-        // 17
-        quizCtrl.addQuestionOnLocalStorage(selectedDomItems.newQuestionText, selectedDomItems.adminOptions);
+        // 100             // 17                                                                // 78
+        var checkBoolean = quizCtrl.addQuestionOnLocalStorage(selectedDomItems.newQuestionText, adminOptions);
+        // 101
+        if(checkBoolean) {
+            // 102
+            UICtrl.createQuestionList(quizCtrl.getQuestionLocalStorage);
+        }
 
     });
 
-})(quizController, UIController);
+    // 103
+    selectedDomItems.insertedQuestsWrapper.addEventListener('click', function(e) {
+        // 105                                                    // 131
+        UICtrl.editQuestList(e, quizCtrl.getQuestionLocalStorage, UICtrl.addInputsDynamically);
+    });
 
+})(quizController, UIController);
 
 
 
