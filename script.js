@@ -1,4 +1,4 @@
-// Lecture: Update Questions - Part 2
+// Lecture: Delete Questions
 
 /*******************************
 *********QUIZ CONTROLLER********
@@ -253,6 +253,33 @@ var UIController = (function() {
                 addInpsDynFn();
                 // 144
                 // console.log(foundItem);
+                // 184
+                var backDefaultView = function() {
+                    // 185
+                    var updatedOptions;
+                    // CUT from updateQuestions Function
+                     // 168
+                     domItems.newQuestionText.value = '';
+                     // 186
+                     updatedOptions = document.querySelectorAll('.admin-option');
+                     // 169
+                     for(var i = 0; i < updatedOptions.length; i++) {
+                         // 170
+                         updatedOptions[i].value = '';
+                         // 171
+                         updatedOptions[i].previousElementSibling.checked = false;
+                     }
+                     // 172
+                     domItems.questDeleteBtn.style.visibility = 'hidden';
+                     // 173
+                     domItems.questUpdateBtn.style.visibility = 'hidden';
+                     // 174
+                     domItems.questInsertBtn.style.visibility = 'visible';
+                     // 175
+                     domItems.questsClearBtn.style.pointerEvents = '';
+                     // 178
+                     updateQuestListFn(storageQuestList);
+                }
                 // 141
                 var updateQuestion = function() {
                     // 147          // 149
@@ -290,28 +317,8 @@ var UIController = (function() {
                                 getStorageQuestList.splice(placeInArr, 1, foundItem);
                                 // 158
                                 storageQuestList.setQuestionCollection(getStorageQuestList);
-                                // 168
-                                domItems.newQuestionText.value = '';
-                                // 169
-                                for(var i = 0; i < optionEls.length; i++) {
-                                    // 170
-                                    optionEls[i].value = '';
-                                    // 171
-                                    optionEls[i].previousElementSibling.checked = false;
-                                }
-                                // 172
-                                domItems.questDeleteBtn.style.visibility = 'hidden';
-                                // 173
-                                domItems.questUpdateBtn.style.visibility = 'hidden';
-                                // 174
-                                domItems.questInsertBtn.style.visibility = 'visible';
-                                // 175
-                                domItems.questsClearBtn.style.pointerEvents = '';
-                                // 178
-                                updateQuestListFn(storageQuestList);
-                                // literally meaning createQuestionList(storageQuestList);
-                              //creatQues is passed as callback fn to update contents of edited question
-                                
+                                // 187
+                                backDefaultView();
                             // 166
                             } else {
                                 // 167
@@ -333,6 +340,19 @@ var UIController = (function() {
                 }
                 // 140
                 domItems.questUpdateBtn.onclick = updateQuestion;
+                // 180
+                var deleteQuestion = function() {
+                    // 181
+                   // console.log('Works');
+                   // 182
+                   getStorageQuestList.splice(placeInArr, 1);
+                   // 183
+                   storageQuestList.setQuestionCollection(getStorageQuestList);
+                   // 188
+                   backDefaultView();
+                }
+                // 179
+                domItems.questDeleteBtn.onclick = deleteQuestion;
 
             }
             // 106
@@ -378,8 +398,6 @@ var controller = (function(quizCtrl, UICtrl) {
     selectedDomItems.insertedQuestsWrapper.addEventListener('click', function(e) {
         // 105                                                    // 131                        // 132                           
         UICtrl.editQuestList(e, quizCtrl.getQuestionLocalStorage, UICtrl.addInputsDynamically, UICtrl.createQuestionList);// 177
-        //after clicking edit button, dom containing admin options button must be editable so addinputsdy callback fn
-        //and after editing ,it must be updated with new contents by using callback fn createQuestionList
     });
 
 })(quizController, UIController);
