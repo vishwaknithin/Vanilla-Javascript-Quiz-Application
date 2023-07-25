@@ -1,4 +1,4 @@
-// Lecture: Edit Questions
+// Lecture: Update Questions - Part 2
 
 /*******************************
 *********QUIZ CONTROLLER********
@@ -26,8 +26,8 @@ var quizController = (function() {
             return JSON.parse(localStorage.getItem('questionCollection'));
         }, 
         // 37
-        removeQuestionCollectino: function() {
-            localStorage.removeItem('questionColection');
+        removeQuestionCollection: function() {
+            localStorage.removeItem('questionCollection');
         }
     }
     // 90
@@ -153,7 +153,8 @@ var UIController = (function() {
         adminOptionsContainer: document.querySelector(".admin-options-container"), // 65
         insertedQuestsWrapper: document.querySelector(".inserted-questions-wrapper"), // 83
         questUpdateBtn: document.getElementById('question-update-btn'), // 133
-        questDeleteBtn: document.getElementById('question-delete-btn') // 134
+        questDeleteBtn: document.getElementById('question-delete-btn'), // 134
+        questsClearBtn: document.getElementById('questions-clear-btn') // 138
     };
 
     // 7
@@ -203,8 +204,8 @@ var UIController = (function() {
                 domItems.insertedQuestsWrapper.insertAdjacentHTML('afterbegin', questHTML);
             }
         },
-        // 104                                           // 130
-        editQuestList: function(event, storageQuestList, addInpsDynFn) {
+        // 104                                           // 130                // 132              // 176
+        editQuestList: function(event, storageQuestList, addInpsDynFn, updateQuestListFn) {
             // 109     // 113               // 117     // 119      // 125
             var getId, getStorageQuestList, foundItem, placeInArr, optionHTML;
             // 107
@@ -244,10 +245,95 @@ var UIController = (function() {
                 domItems.questUpdateBtn.style.visibility = 'visible';
                 // 137
                 domItems.questInsertBtn.style.visibility = 'hidden';
+                // 139
+                domItems.questsClearBtn.style.pointerEvents = 'none';
                 // 127
                 // console.log(optionHTML);
                 // 132
-                addInpsDynFn();//to make add options contsainer html available for edit questions
+                addInpsDynFn();
+                // 144
+                // console.log(foundItem);
+                // 141
+                var updateQuestion = function() {
+                    // 147          // 149
+                    var newOptions, optionEls;
+                    // 148
+                    newOptions = [];
+                    // 150
+                    optionEls = document.querySelectorAll('.admin-option');
+                    // 143
+                    foundItem.questionText = domItems.newQuestionText.value;
+                    // 146
+                    foundItem.correctAnswer = '';
+                    // 151
+                    for(var i = 0; i < optionEls.length; i++) {
+                        // 152
+                        if(optionEls[i].value !== '') {
+                            // 153
+                            newOptions.push(optionEls[i].value);
+                            // 154
+                            if(optionEls[i].previousElementSibling.checked) {
+                                // 155
+                                foundItem.correctAnswer = optionEls[i].value;
+                            }
+                        }
+                    }
+                    // 156
+                    foundItem.options = newOptions;
+                    // 159
+                    if(foundItem.questionText !== '') {
+                        // 162
+                        if(foundItem.options.length > 1) {
+                            // 165
+                            if(foundItem.correctAnswer !== '') {
+                                // 157
+                                getStorageQuestList.splice(placeInArr, 1, foundItem);
+                                // 158
+                                storageQuestList.setQuestionCollection(getStorageQuestList);
+                                // 168
+                                domItems.newQuestionText.value = '';
+                                // 169
+                                for(var i = 0; i < optionEls.length; i++) {
+                                    // 170
+                                    optionEls[i].value = '';
+                                    // 171
+                                    optionEls[i].previousElementSibling.checked = false;
+                                }
+                                // 172
+                                domItems.questDeleteBtn.style.visibility = 'hidden';
+                                // 173
+                                domItems.questUpdateBtn.style.visibility = 'hidden';
+                                // 174
+                                domItems.questInsertBtn.style.visibility = 'visible';
+                                // 175
+                                domItems.questsClearBtn.style.pointerEvents = '';
+                                // 178
+                                updateQuestListFn(storageQuestList);
+                                // literally meaning createQuestionList(storageQuestList);
+                              //creatQues is passed as callback fn to update contents of edited question
+                                
+                            // 166
+                            } else {
+                                // 167
+                                alert('You missed to check correct answer, or you checked answer without value');
+                            }
+                        // 163
+                        } else
+                        // 164
+                        alert('You must insert at least two options');
+                    // 160
+                    } else {
+                        // 161
+                        alert('Please, insert question');
+                    }
+                    // 142
+                    // console.log('Works');
+                    // 145
+                    // console.log(foundItem);
+                }
+                // 140
+                domItems.questUpdateBtn.onclick = updateQuestion;
+
             }
             // 106
             // console.log(event, storageQuestList);
@@ -290,8 +376,10 @@ var controller = (function(quizCtrl, UICtrl) {
 
     // 103
     selectedDomItems.insertedQuestsWrapper.addEventListener('click', function(e) {
-        // 105                                                    // 131
-        UICtrl.editQuestList(e, quizCtrl.getQuestionLocalStorage, UICtrl.addInputsDynamically);
+        // 105                                                    // 131                        // 132                           
+        UICtrl.editQuestList(e, quizCtrl.getQuestionLocalStorage, UICtrl.addInputsDynamically, UICtrl.createQuestionList);// 177
+        //after clicking edit button, dom containing admin options button must be editable so addinputsdy callback fn
+        //and after editing ,it must be updated with new contents by using callback fn createQuestionList
     });
 
 })(quizController, UIController);
